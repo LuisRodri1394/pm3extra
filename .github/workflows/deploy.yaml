@@ -34,7 +34,7 @@ jobs:
     
     - name: Deploy to GKE
       run: |
-        gcloud container clusters get-credentials meu-cluster --zone us-central1-a
+        gcloud container clusters get-credentials cluster-extrapm3 --zone us-central1-a
         kubectl apply -f mysql-config.yaml
         kubectl apply -f mysql-deployment.yaml
         kubectl apply -f backend-deployment.yaml
