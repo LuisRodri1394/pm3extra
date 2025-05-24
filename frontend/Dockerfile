@@ -2,17 +2,17 @@
 FROM node:18 AS builder
 WORKDIR /app
 
-# Primeiro copia apenas os arquivos necessários para instalação
+# 1. Copia os arquivos de dependência primeiro (para melhorar cache)
 COPY package.json package-lock.json ./
 
-# Instala dependências com cache
+# 2. Instala dependências
 RUN npm ci --quiet
 
-# Copia o restante dos arquivos
+# 3. Copia o restante dos arquivos
 COPY . .
 
-# Executa o build com output detalhado
-RUN npm run build -- --prod --progress=false
+# 4. Executa o build de produção (Angular 15+)
+RUN npm run build -- --configuration=production --progress=false
 
 # Estágio de produção
 FROM nginx:alpine
