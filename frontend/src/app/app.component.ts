@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { response } from 'express';
+import { CommonModule } from '@angular/common'; 
 
 
 @Component({
   selector: 'app-root',
+  imports: [CommonModule],
   template: `
     <h1>Meu App</h1>
     <div *ngIf="data">
