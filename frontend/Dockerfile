@@ -1,5 +1,5 @@
 # Estágio de construção (builder)
-FROM node:16 AS builder
+FROM node:18 AS builder
 WORKDIR /app
 
 # Primeiro copia apenas os arquivos necessários para instalação
