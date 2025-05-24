@@ -16,9 +16,13 @@ RUN npm ci --no-audit --prefer-offline
 # 5. Copia todo o código fonte
 COPY . .
 
+RUN npm install -g @angular/cli
+RUN npm run build -- --configuration=production
+
+
 # 6. Executa o build com tratamento de erros detalhado
-RUN npm run build -- --configuration=production 2>&1 | tee build.log || \
-    (echo "=== BUILD FAILED ===" && cat build.log && exit 1)
+#RUN npm run build -- --configuration=production 2>&1 | tee build.log || \
+#    (echo "=== BUILD FAILED ===" && cat build.log && exit 1)
 
 # Verificação explícita do diretório dist
 RUN ls -la /app/dist || (echo "Dist directory not found!" && exit 1)
