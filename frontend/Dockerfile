@@ -1,31 +1,36 @@
 # Estágio de construção
 FROM node:18.17.1-alpine AS builder
 
-# 1. Configuração inicial
-RUN apk add --no-cache python3 make g++ git
+# 1. Configura ambiente e instala dependências do sistema
+RUN apk add --no-cache python3 make g++
+
+# 2. Configura diretório de trabalho
 WORKDIR /app
 
-# 2. Instalação otimizada de dependências
+# 3. Copia apenas os arquivos necessários para instalação
 COPY package.json package-lock.json ./
+
+# 4. Instala dependências com cache
 RUN npm ci --no-audit --prefer-offline
 
-# 3. Cópia dos arquivos fonte
+# 5. Copia todo o código fonte
 COPY . .
 
-# 4. Build com verificação detalhada
-RUN npm run build -- --output-path=dist --configuration=production; \
-    BUILD_EXIT_CODE=$?; \
-    if [ ! -d "dist" ]; then \
-      echo "=== BUILD DEBUG INFORMATION ==="; \
-      echo "Current directory contents:"; ls -la; \
-      echo "angular.json contents:"; cat angular.json | grep outputPath; \
-      echo "npm build output:"; cat npm-debug.log 2>/dev/null || echo "No debug log"; \
-      exit 1; \
-    fi; \
-    exit $BUILD_EXIT_CODE
+# 6. Executa o build com tratamento de erros detalhado
+RUN npm run build -- --output-path=dist --configuration=production 2>&1 | tee build.log || \
+    (echo "=== BUILD FAILED ===" && cat build.log && exit 1)
 
 # Estágio de produção
 FROM nginx:1.25.2-alpine
+
+# 7. Remove configuração padrão do Nginx
+RUN rm -rf /etc/nginx/conf.d/default.conf
+
+# 8. Copia arquivos construídos e configuração Nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d
+
+# 9. Expõe porta e define health check
 EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:80 || exit 1
