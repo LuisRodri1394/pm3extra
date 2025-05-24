@@ -31,13 +31,25 @@ jobs:
       run: |
         docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/repoextra/frontend:latest .
         docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/repoextra/frontend:latest
-    
-    - name: Deploy to GKE
+
+    - name: Install gke-gcloud-auth-plugin
       run: |
-        gcloud container clusters get-credentials cluster-extrapm3 --zone us-central1-a
+        sudo apt-get update
+        sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin -y
+        gcloud components install gke-gcloud-auth-plugin --quiet   
+    
+    - name: Get Cluster Credentials
+      run: |
+        gcloud container clusters get-credentials cluster-${{ vars.CLUSTER_SUFFIX }} \
+        --zone us-central1-a \
+        --project ${{ secrets.GCP_PROJECT }}
+        kubectl config current-context
+
+    - name: Apply Kubernetes configurations
+      run: |
         kubectl apply -f mysql-config.yaml
         kubectl apply -f mysql-deployment.yaml
         kubectl apply -f backend-deployment.yaml
         kubectl apply -f backend-service.yaml
         kubectl apply -f frontend-deployment.yaml
-        kubectl apply -f frontend-service.yaml
+        kubectl apply -f frontend-service.yaml 
