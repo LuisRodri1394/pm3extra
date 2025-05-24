@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist/out-tsc/server",
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "types": ["node", "express"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "exclude": [
+    "**/*.spec.ts",
+    "src/test.ts",
+    "src/**/*.spec.ts"
+  ],
+  "include": ["server.ts", "src/**/*.ts"]
+}

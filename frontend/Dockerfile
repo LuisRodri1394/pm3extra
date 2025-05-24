@@ -1,5 +1,5 @@
 # Estágio de construção
-FROM node:22 AS builder
+FROM node:18.19-alpine AS builder
 
 # 1. Configura ambiente e instala dependências do sistema
 RUN apk add --no-cache python3 make g++
@@ -13,13 +13,11 @@ COPY package.json package-lock.json ./
 # 4. Instala dependências com cache
 RUN npm ci --no-audit --prefer-offline
 
-RUN npm install -g @angular/cli
-
 # 5. Copia todo o código fonte
 COPY . .
 
-
-RUN npm run build 
+RUN npm install -g @angular/cli
+RUN npm run build -- --configuration=production
 
 
 # 6. Executa o build com tratamento de erros detalhado
@@ -27,10 +25,10 @@ RUN npm run build
 #    (echo "=== BUILD FAILED ===" && cat build.log && exit 1)
 
 # Verificação explícita do diretório dist
-#RUN ls -la /app/dist || (echo "Dist directory not found!" && exit 1)
+RUN ls -la /app/dist || (echo "Dist directory not found!" && exit 1)
 
 # Estágio de produção
-FROM nginx:alpine
+FROM nginx:1.25.2-alpine
 
 # 7. Remove configuração padrão do Nginx
 RUN rm -rf /etc/nginx/conf.d/default.conf
