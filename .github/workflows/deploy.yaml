@@ -45,7 +45,7 @@ jobs:
     
     - name: Get Cluster Credentials
       run: |
-        gcloud container clusters get-credentials cluster-${{ vars.CLUSTER_SUFFIX }} \
+        gcloud container clusters get-credentials cluster-extrapm3-${{ vars.CLUSTER_SUFFIX }} \
         --zone us-central1-a \
         --project ${{ secrets.GCP_PROJECT }}
         kubectl config current-context
