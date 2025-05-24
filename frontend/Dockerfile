@@ -1,5 +1,5 @@
 # Estágio de construção
-FROM node:18.17.1-alpine AS builder
+FROM node:18.19-alpine AS builder
 
 # 1. Configura ambiente e instala dependências do sistema
 RUN apk add --no-cache python3 make g++
