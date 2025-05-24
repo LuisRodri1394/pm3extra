@@ -17,8 +17,11 @@ RUN npm ci --no-audit --prefer-offline
 COPY . .
 
 # 6. Executa o build com tratamento de erros detalhado
-RUN npm run build -- --output-path=dist --configuration=production 2>&1 | tee build.log || \
+RUN npm run build -- --configuration=production 2>&1 | tee build.log || \
     (echo "=== BUILD FAILED ===" && cat build.log && exit 1)
+
+# Verificação explícita do diretório dist
+RUN ls -la /app/dist || (echo "Dist directory not found!" && exit 1)
 
 # Estágio de produção
 FROM nginx:1.25.2-alpine
@@ -26,8 +29,8 @@ FROM nginx:1.25.2-alpine
 # 7. Remove configuração padrão do Nginx
 RUN rm -rf /etc/nginx/conf.d/default.conf
 
-# 8. Copia arquivos construídos e configuração Nginx
-COPY --from=builder /dist /usr/share/nginx/html
+# 8. CORREÇÃO: Copia do caminho correto (/app/dist)
+COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d
 
 # 9. Expõe porta e define health check
