@@ -1,35 +1,31 @@
 # Estágio de construção
 FROM node:18.17.1-alpine AS builder
 
-# 1. Instala dependências do sistema
+# 1. Configuração inicial
 RUN apk add --no-cache python3 make g++ git
-
-# 2. Configura diretório de trabalho
 WORKDIR /app
 
-# 3. Copia arquivos de dependências primeiro (para cache)
+# 2. Instalação otimizada de dependências
 COPY package.json package-lock.json ./
-
-# 4. Instala dependências
 RUN npm ci --no-audit --prefer-offline
 
-# 5. Copia todo o código fonte
+# 3. Cópia dos arquivos fonte
 COPY . .
 
-# 6. Executa o build com verificação explícita
-RUN npm run build -- --output-path=dist --configuration=production && \
-    [ -d "dist" ] || (echo "Error: dist directory was not created!" && exit 1)
+# 4. Build com verificação detalhada
+RUN npm run build -- --output-path=dist --configuration=production; \
+    BUILD_EXIT_CODE=$?; \
+    if [ ! -d "dist" ]; then \
+      echo "=== BUILD DEBUG INFORMATION ==="; \
+      echo "Current directory contents:"; ls -la; \
+      echo "angular.json contents:"; cat angular.json | grep outputPath; \
+      echo "npm build output:"; cat npm-debug.log 2>/dev/null || echo "No debug log"; \
+      exit 1; \
+    fi; \
+    exit $BUILD_EXIT_CODE
 
 # Estágio de produção
 FROM nginx:1.25.2-alpine
-
-# 7. Remove configuração padrão do Nginx
-RUN rm -rf /etc/nginx/conf.d/default.conf
-
-# 8. Copia arquivos construídos (com verificação)
 COPY --from=builder /app/dist /usr/share/nginx/html
-
-# 9. Copia configuração customizada do Nginx
 COPY nginx.conf /etc/nginx/conf.d
-
 EXPOSE 80
