@@ -3,6 +3,7 @@ import MySQLdb
 import os
 from time import sleep
 from contextlib import closing
+from werkzeug.urls import url_quote as quote  
 
 app = Flask(__name__)
 
