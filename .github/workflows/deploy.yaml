@@ -57,6 +57,8 @@ jobs:
         kubectl apply -f mysql-config.yaml
         kubectl apply -f mysql-deployment.yaml
         kubectl apply -f backend-deployment.yaml
+        kubectl rollout status deployment/backend --timeout=300s || exit 1
         kubectl apply -f backend-service.yaml
         kubectl apply -f frontend-deployment.yaml
+        kubectl rollout status deployment/frontend --timeout=300s || exit 1
         kubectl apply -f frontend-service.yaml 

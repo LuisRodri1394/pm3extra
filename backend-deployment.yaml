@@ -3,7 +3,12 @@ kind: Deployment
 metadata:
   name: backend
 spec:
-  replicas: 2
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingupdate:
+      maxSurge: 2
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: backend
@@ -17,6 +22,25 @@ spec:
         image: us-central1-docker.pkg.dev/extrapm3/repoextra/backend:latest
         ports:
         - containerPort: 5000
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"       
         envFrom:
         - configMapRef:
             name: mysql-config
