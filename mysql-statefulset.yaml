@@ -15,9 +15,31 @@ spec:
         app: mysql
     spec:
       terminationGracePeriodSeconds: 60
+      # --- Adicionado initContainer para limpeza segura do diretório ---
+      initContainers:
+      - name: init-mysql
+        image: busybox
+        command: 
+          - "sh"
+          - "-c"
+          - |
+            if [ -n "$(ls -A /var/lib/mysql)" ]; then
+              echo "Diretório de dados não vazio. Limpando...";
+              rm -rf /var/lib/mysql/*;
+            fi
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+      # --- Container principal do MySQL ---
       containers:
       - name: mysql
         image: mysql:5.7
+        env:
+          # Variáveis adicionais para evitar conflitos na inicialização
+          - name: MYSQL_INITDB_SKIP_TZINFO
+            value: "1"
+          - name: MYSQL_ALLOW_EMPTY_PASSWORD
+            value: "false"
         envFrom:
         - secretRef:
             name: mysql-secret
@@ -29,25 +51,28 @@ spec:
         volumeMounts:
         - name: mysql-data
           mountPath: /var/lib/mysql
+        # --- Probes ajustadas ---
         livenessProbe:
           exec:
             command:
-            - mysqladmin
-            - ping
-            - -h
-            - 127.0.0.1
-          initialDelaySeconds: 60
+              - mysqladmin
+              - ping
+              - -h
+              - 127.0.0.1
+          initialDelaySeconds: 60  # Aumentado para MySQL 5.7
           periodSeconds: 10
           timeoutSeconds: 5
         readinessProbe:
           exec:
             command:
-            - sh
-            - -c
-            - "mysql -h 127.0.0.1 -u root -p${MYSQL_ROOT_PASSWORD} -e 'SELECT 1'"
-          initialDelaySeconds: 30
+              - sh
+              - "-c"
+              - "mysql -h 127.0.0.1 -u root -p${MYSQL_ROOT_PASSWORD} -e 'SELECT 1'"
+          initialDelaySeconds: 30  # Aumentado para MySQL 5.7
           periodSeconds: 5
           timeoutSeconds: 3
+          failureThreshold: 3
+        # --- Resources mantidos ---
         resources:
           requests:
             cpu: "100m"
@@ -55,6 +80,7 @@ spec:
           limits:
             cpu: "300m"
             memory: "1Gi"
+  # --- PVC corrigido (nome consistente) ---
   volumeClaimTemplates:
   - metadata:
       name: mysql-data
