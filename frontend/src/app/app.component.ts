@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
   standalone: true, // 👈 OBRIGATÓRIO em standalone components
   imports: [CommonModule, HttpClientModule], // 👈 Adiciona os módulos necessários
   template: `
-    <h1>Meu App Teste</h1>
+    <h1>Meu App Teste 2</h1>
     <div *ngIf="data">
       <pre>{{ data | json }} </pre>
     </div>
