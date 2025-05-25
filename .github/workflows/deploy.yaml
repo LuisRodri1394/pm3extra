@@ -34,13 +34,8 @@ jobs:
 
     - name: Install gke-gcloud-auth-plugin
       run: |
- 
         echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-    
-    
         curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-    
-   
         sudo apt-get update && sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
     
     - name: Get Cluster Credentials
@@ -54,31 +49,33 @@ jobs:
 
     - name: Apply Kubernetes configurations
       run: |
-        
         kubectl apply -f mysql-secret.yaml
         kubectl apply -f mysql-config.yaml
         kubectl apply -f mysql-service.yaml
 
         kubectl apply -f mysql-statefulset.yaml && \
         kubectl rollout status statefulset/mysql -n stage --timeout=300s || {
-        echo "❌ Falha no MySQL. Logs:"
-        kubectl logs -l app=mysql -n stage --prefix
-        exit 1
+          echo "❌ Falha no MySQL. Logs:"
+          kubectl logs -l app=mysql -n stage --prefix
+          exit 1
         }
 
         kubectl apply -f backend-deployment.yaml && \
         kubectl wait --for=condition=ready pod -l app=backend -n stage --timeout=600s || {
-        echo "❌ Falha no Backend. Logs:"
-        kubectl logs -l app=backend -n stage --prefix
-        exit 1
+          echo "❌ Falha no Backend. Logs:"
+          kubectl logs -l app=backend -n stage --prefix
+          exit 1
         }
 
         kubectl apply -f frontend-deployment.yaml && \
         kubectl rollout status deployment/frontend -n stage --timeout=300s || {
-        echo "❌ Falha no Frontend. Logs:"
-        kubectl logs -l app=frontend -n stage --prefix
-        exit 1
+          echo "❌ Falha no Frontend. Logs:"
+          kubectl logs -l app=frontend -n stage --prefix
+          exit 1
         }
+
+        # Força o redeploy do frontend para atualizar a imagem latest
+        kubectl rollout restart deployment/frontend -n stage
 
         kubectl apply -f backend-service.yaml
         kubectl apply -f frontend-service.yaml
