@@ -4,10 +4,10 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
-  standalone: true, // 👈 OBRIGATÓRIO em standalone components
-  imports: [CommonModule, HttpClientModule], // 👈 Adiciona os módulos necessários
+  standalone: true, 
+  imports: [CommonModule, HttpClientModule], 
   template: `
-    <h1>Meu App Teste 2</h1>
+    <h1>Meu App Teste 3</h1>
     <div *ngIf="data">
       <pre>{{ data | json }} </pre>
     </div>

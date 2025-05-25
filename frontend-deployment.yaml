@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
-  namespace: stage  # Adicionando namespace para consistência
+  namespace: stage  
 spec:
   replicas: 2
   strategy:
@@ -25,24 +25,24 @@ spec:
         ports:
         - containerPort: 80
         env:
-        - name: API_BASE_URL  # Variável para o endpoint do backend
+        - name: API_BASE_URL  
           value: "http://backend-service.stage.svc.cluster.local:5000"
         readinessProbe:
           httpGet:
             path: /
             port: 80
-          initialDelaySeconds: 5  # Reduzido para frontend estático
+          initialDelaySeconds: 5  
           periodSeconds: 5
-          timeoutSeconds: 3  # Adicionado
-          failureThreshold: 2  # Adicionado
+          timeoutSeconds: 3  
+          failureThreshold: 2  
         livenessProbe:
           httpGet:
             path: /
             port: 80
-          initialDelaySeconds: 15  # Reduzido para frontend
+          initialDelaySeconds: 15  
           periodSeconds: 10
-          timeoutSeconds: 3  # Adicionado
-          failureThreshold: 3  # Adicionado
+          timeoutSeconds: 3  
+          failureThreshold: 3  
         resources:
           requests:
             cpu: "10m"
@@ -53,4 +53,4 @@ spec:
         lifecycle:
           preStop:
             exec:
-              command: ["/bin/sh", "-c", "sleep 15"]  # Graceful shutdown
+              command: ["/bin/sh", "-c", "sleep 15"]  

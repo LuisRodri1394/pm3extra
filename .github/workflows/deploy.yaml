@@ -55,26 +55,26 @@ jobs:
 
         kubectl apply -f mysql-statefulset.yaml && \
         kubectl rollout status statefulset/mysql -n stage --timeout=300s || {
-          echo "❌ Falha no MySQL. Logs:"
+          echo " Falha no MySQL. Logs:"
           kubectl logs -l app=mysql -n stage --prefix
           exit 1
         }
 
         kubectl apply -f backend-deployment.yaml && \
         kubectl wait --for=condition=ready pod -l app=backend -n stage --timeout=600s || {
-          echo "❌ Falha no Backend. Logs:"
+          echo " Falha no Backend. Logs:"
           kubectl logs -l app=backend -n stage --prefix
           exit 1
         }
 
         kubectl apply -f frontend-deployment.yaml && \
         kubectl rollout status deployment/frontend -n stage --timeout=300s || {
-          echo "❌ Falha no Frontend. Logs:"
+          echo " Falha no Frontend. Logs:"
           kubectl logs -l app=frontend -n stage --prefix
           exit 1
         }
 
-        # Força o redeploy do frontend para atualizar a imagem latest
+        
         kubectl rollout restart deployment/frontend -n stage
 
         kubectl apply -f backend-service.yaml
