@@ -21,6 +21,7 @@ spec:
       containers:
       - name: frontend
         image: us-central1-docker.pkg.dev/extrapm3/repoextra/frontend:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         env:
