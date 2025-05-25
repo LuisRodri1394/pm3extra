@@ -81,4 +81,4 @@ jobs:
         }
 
         kubectl apply -f backend-service.yaml
-        kubectl apply -f frontend-service.yam
+        kubectl apply -f frontend-service.yaml
