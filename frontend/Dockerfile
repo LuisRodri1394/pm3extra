@@ -34,7 +34,7 @@ FROM nginx:1.25.2-alpine
 RUN rm -rf /etc/nginx/conf.d/default.conf
 
 # 8. CORREÇÃO: Copia do caminho correto (/app/dist)
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist/frontend /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d
 
 # 9. Expõe porta e define health check
