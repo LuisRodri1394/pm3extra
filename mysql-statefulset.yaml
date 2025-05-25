@@ -62,7 +62,7 @@ spec:
             memory: "1Gi"
   volumeClaimTemplates:
   - metadata:
-      name: mysql-data
+      name: mysql-data-2
     spec:
       accessModes: ["ReadWriteOnce"]
       storageClassName: "standard"
