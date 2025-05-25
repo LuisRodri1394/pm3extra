@@ -36,23 +36,18 @@ spec:
             - ping
             - -h
             - 127.0.0.1
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
         readinessProbe:
           exec:
             command:
-            - mysql
-            - -h
-            - 127.0.0.1
-            - -u
-            - root
-            - -p$(MYSQL_ROOT_PASSWORD)
-            - -e
-            - "SELECT 1"
-          initialDelaySeconds: 10
+            - sh
+            - -c
+            - "mysql -h 127.0.0.1 -u root -p${MYSQL_ROOT_PASSWORD} -e 'SELECT 1'"
+          initialDelaySeconds: 30
           periodSeconds: 5
-          timeoutSeconds: 1
+          timeoutSeconds: 3
         resources:
           requests:
             cpu: "100m"
@@ -62,7 +57,7 @@ spec:
             memory: "1Gi"
   volumeClaimTemplates:
   - metadata:
-      name: mysql-data-3
+      name: mysql-data
     spec:
       accessModes: ["ReadWriteOnce"]
       storageClassName: "standard"
