@@ -55,10 +55,10 @@ spec:
           timeoutSeconds: 1
         resources:
           requests:
-            cpu: "200m"
-            memory: "1Gi"
+            cpu: "100m"
+            memory: "512Mi"
           limits:
-            cpu: "1"
+            cpu: "300m"
             memory: "2Gi"
   volumeClaimTemplates:
   - metadata:
