@@ -2,11 +2,18 @@ apiVersion: v1
 kind: Service
 metadata:
   name: frontend-service
+  namespace: stage      # Adicionar namespace para consistência
+  annotations:
+    cloud.google.com/load-balancer-type: "external"  # Especifica LB externo no GKE
+    cloud.google.com/neg: '{"ingress": true}'        # Habilita Network Endpoint Groups
 spec:
   selector:
     app: frontend
   ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 80
+    - name: http       # Nome descritivo (boas práticas)
+      protocol: TCP
+      port: 80
+      targetPort: 80
   type: LoadBalancer
+  sessionAffinity: None  # Explícito para stateless apps
+  externalTrafficPolicy: Local  # Preserva IP de origem (opcional)

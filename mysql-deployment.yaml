@@ -2,9 +2,10 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mysql
+  namespace: stage  # Adicionando namespace
 spec:
   serviceName: mysql-service
-  replicas: 1
+  replicas: 1  # Para produção, considere 3 com replication
   selector:
     matchLabels:
       app: mysql
@@ -13,22 +14,50 @@ spec:
       labels:
         app: mysql
     spec:
+      terminationGracePeriodSeconds: 60  # Tempo para graceful shutdown
       containers:
       - name: mysql
         image: mysql:5.7
         envFrom:
         - configMapRef:
             name: mysql-config
+        env:
+        - name: MYSQL_ROOT_PASSWORD  # Seguro: usar Secret em vez de ConfigMap
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: root-password
         ports:
         - containerPort: 3306
+          name: mysql
         volumeMounts:
         - name: mysql-persistent-storage
           mountPath: /var/lib/mysql
+        livenessProbe:
+          exec:
+            command: ["mysqladmin", "ping", "-h", "localhost"]
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command: ["mysql", "-h", "127.0.0.1", "-u", "root", "-p$(MYSQL_ROOT_PASSWORD)", "-e", "SELECT 1"]
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
   volumeClaimTemplates:
   - metadata:
       name: mysql-persistent-storage
     spec:
       accessModes: ["ReadWriteOnce"]
+      storageClassName: "standard"  # Especificar classe de armazenamento
       resources:
         requests:
-          storage: 1Gi
+          storage: 10Gi  # Aumentado para produção

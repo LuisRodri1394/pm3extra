@@ -2,12 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
+  namespace: stage  # Adicionado namespace explícito
 spec:
   replicas: 3
   strategy:
     type: RollingUpdate
-    rollingupdate:
-      maxSurge: 2
+    rollingUpdate:  # Corrigido o nome (era "rollingupdate")
+      maxSurge: 1    # Alterado de 2 para 1 (mais conservador)
       maxUnavailable: 0
   selector:
     matchLabels:
@@ -17,30 +18,38 @@ spec:
       labels:
         app: backend
     spec:
+      initContainers:  # Adicionado initContainer para esperar MySQL
+      - name: wait-for-mysql
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z mysql-service 3306; do echo "Waiting for MySQL..."; sleep 2; done']
       containers:
       - name: backend
         image: us-central1-docker.pkg.dev/extrapm3/repoextra/backend:latest
         ports:
         - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: mysql-config
         readinessProbe:
           httpGet:
             path: /api/health
             port: 5000
-          initialDelaySeconds: 15
+          initialDelaySeconds: 20  # Aumentado de 15 para 20s
           periodSeconds: 5
+          failureThreshold: 3      # Adicionado
+          timeoutSeconds: 3        # Adicionado
         livenessProbe:
           httpGet:
             path: /api/health
             port: 5000
-          initialDelaySeconds: 30
+          initialDelaySeconds: 45  # Aumentado de 30 para 45s
           periodSeconds: 10
+          failureThreshold: 3      # Adicionado
+          timeoutSeconds: 3        # Adicionado
         resources:
           requests:
             cpu: "100m"
             memory: "256Mi"
           limits:
             cpu: "500m"
-            memory: "512Mi"       
-        envFrom:
-        - configMapRef:
-            name: mysql-config
+            memory: "512Mi"

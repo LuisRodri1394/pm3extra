@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
+  namespace: stage  # Adicionando namespace para consistência
 spec:
   replicas: 3
   strategy:
@@ -22,22 +23,33 @@ spec:
         image: us-central1-docker.pkg.dev/extrapm3/repoextra/frontend:latest
         ports:
         - containerPort: 80
+        env:
+        - name: API_BASE_URL  # Variável para o endpoint do backend
+          value: "http://backend-service.stage.svc.cluster.local:5000"
         readinessProbe:
           httpGet:
-            path: /          # Rota raiz ou /health (depende do seu frontend)
+            path: /
             port: 80
-          initialDelaySeconds: 10
+          initialDelaySeconds: 5  # Reduzido para frontend estático
           periodSeconds: 5
+          timeoutSeconds: 3  # Adicionado
+          failureThreshold: 2  # Adicionado
         livenessProbe:
           httpGet:
             path: /
             port: 80
-          initialDelaySeconds: 20
+          initialDelaySeconds: 15  # Reduzido para frontend
           periodSeconds: 10
+          timeoutSeconds: 3  # Adicionado
+          failureThreshold: 3  # Adicionado
         resources:
           requests:
-            cpu: "50m"      # Frontend geralmente consome menos CPU
+            cpu: "50m"
             memory: "128Mi"
           limits:
             cpu: "200m"
             memory: "256Mi"
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 15"]  # Graceful shutdown

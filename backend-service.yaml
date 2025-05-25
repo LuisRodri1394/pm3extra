@@ -2,11 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend-service
+  namespace: stage  # Adicionando namespace para consistência
 spec:
   selector:
-    app: backend
+    app: backend    # Deve corresponder aos labels do seu deployment
   ports:
-  - protocol: TCP
-    port: 5000
-    targetPort: 5000
-  type: ClusterIP
+    - name: http   # Nome explícito para a porta (melhor prática)
+      protocol: TCP
+      port: 5000    # Porta exposta pelo Service
+      targetPort: 5000  # Porta do container (deve bater com containerPort no deployment)
+  type: ClusterIP   # Correto para comunicação interna
+  sessionAffinity: ClientIP  # Opcional: mantém sessões do mesmo cliente
